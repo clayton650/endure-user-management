@@ -1,6 +1,6 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { CfnOutput, Fn } from "aws-cdk-lib";
+import { CfnOutput } from "aws-cdk-lib";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
 
 interface UserManagementEnvProps extends Environment {
