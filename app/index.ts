@@ -9,3 +9,6 @@ export const handler: APIGatewayProxyHandler = async (event ) => {
     }),
   };
 }
+
+//@ts-ignore
+handler({"body": "test"});
