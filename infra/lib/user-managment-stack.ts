@@ -1,24 +1,29 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { Fn } from "aws-cdk-lib";
+import { CfnOutput, Fn } from "aws-cdk-lib";
+import { Environment } from "aws-cdk-lib/core/lib/environment";
 
+interface UserManagementEnvProps extends Environment {
+  name: string;
+}
 interface UserManagementProps extends cdk.StackProps {
   domainName: string;
   subDomain: string;
+  env: UserManagementEnvProps;
 }
 
 export default class UserManagementStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: UserManagementProps) {
     super(scope, id, props);
 
-    const { domainName, subDomain } = props;
+    const { domainName, subDomain, env } = props;
 
     const userManagementLambda = new cdk.aws_lambda.Function(
       this,
       "UserManagementFunction",
       {
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-        code: cdk.aws_lambda.Code.fromAsset("../../app"),
+        code: cdk.aws_lambda.Code.fromAsset("../app"),
         handler: "login.default",
       },
     );
@@ -43,12 +48,22 @@ export default class UserManagementStack extends cdk.Stack {
       },
     );
 
-    const certificate =
-      cdk.aws_certificatemanager.Certificate.fromCertificateArn(
-        this,
-        "Certificate",
-        Fn.importValue("CertificateArn"),
-      );
+    const certificate = new cdk.aws_certificatemanager.DnsValidatedCertificate(
+      this,
+      "ServicesCertificate",
+      {
+        domainName,
+        subjectAlternativeNames: [`*.${domainName}`],
+        hostedZone,
+        validation:
+          cdk.aws_certificatemanager.CertificateValidation.fromDns(hostedZone),
+      },
+    );
+
+    new CfnOutput(this, "CertificateArn ", {
+      exportName: `endure-${env.name}-${env.region}-domain-dns-certificate-arn`,
+      value: certificate.certificateArn,
+    });
 
     const apiGatewayDomainName = new cdk.aws_apigateway.DomainName(
       this,
