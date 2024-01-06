@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import UserManagementStack from "../lib/user-managment-stack";
+import UserManagementStack from "../lib";
 
 const config = {
   accountId: "022703707499",

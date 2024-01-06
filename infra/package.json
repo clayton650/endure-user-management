@@ -11,7 +11,10 @@
     "cdk": "cdk",
     "lint": "eslint --ext '.ts' --ignore-pattern '**/*.d.ts' .",
     "lint:fix": "yarn run lint -- --fix",
-    "sanity": "yarn lint"
+    "format:check": "prettier **/*.{ts,json} --check",
+    "format:fix": "prettier **/*.{ts,json} --write",
+    "fix": "yarn lint:fix && yarn format:fix",
+    "sanity": "yarn lint && yarn format:check"
   },
   "devDependencies": {
     "@types/node": "20.10.4",
@@ -28,7 +31,7 @@
     "eslint-plugin-prettier": "^4.0.0"
   },
   "dependencies": {
-    "aws-pwd-lib": "2.118.0",
+    "aws-cdk-lib": "2.118.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }
