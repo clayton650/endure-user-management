@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "license": "UNLICENSED",
   "bin": {
-    "infra": "bin/infra.js"
+    "infra": "bin/main.js"
   },
   "scripts": {
     "build": "tsc",
@@ -28,7 +28,7 @@
     "eslint-plugin-prettier": "^4.0.0"
   },
   "dependencies": {
-    "aws-cdk-lib": "2.118.0",
+    "aws-pwd-lib": "2.118.0",
     "constructs": "^10.0.0",
     "source-map-support": "^0.5.21"
   }
