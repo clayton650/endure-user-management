@@ -19,14 +19,14 @@ export default class UserManagementStack extends cdk.Stack {
 
     const { domainName, subDomain, env } = props;
 
-    const userManagementLambda = new cdk.aws_lambda_nodejs.NodejsFunction(
+    const userManagementLambda = new cdk.aws_lambda.Function(
       this,
       "UserManagementFunction",
       {
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-        projectRoot: path.join(__dirname, "../../app"),
-        depsLockFilePath: path.join(__dirname, "../../app/yarn.lock"),
-        entry: path.join(__dirname, "../../app/index.ts"),
+        code: cdk.aws_lambda.Code.fromAsset(
+          path.join(__dirname, "../../app/dist/index.zip"),
+        ),
         handler: "index.handler",
       },
     );
