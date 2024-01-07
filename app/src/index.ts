@@ -5,10 +5,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
   return {
     statusCode: 200,
     body: JSON.stringify({
-      message: "Hello from user management",
+      message: "Hello from user management's new lambda!",
     }),
   };
 };
-
-// @ts-ignore
-handler({ body: "test" });
