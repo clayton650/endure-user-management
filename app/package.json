@@ -12,6 +12,7 @@
     "format:check": "prettier **/*.{ts,json} --check",
     "format:fix": "prettier **/*.{ts,json} --write",
     "fix": "yarn lint:fix && yarn format:fix",
+    "start": "yarn build && node index.js",
     "sanity": "yarn lint && yarn format:check"
   },
   "dependencies": {

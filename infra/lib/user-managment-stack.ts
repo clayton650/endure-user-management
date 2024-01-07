@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { CfnOutput } from "aws-cdk-lib";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
+import * as path from "node:path";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
@@ -18,13 +19,13 @@ export default class UserManagementStack extends cdk.Stack {
 
     const { domainName, subDomain, env } = props;
 
-    const userManagementLambda = new cdk.aws_lambda.Function(
+    const userManagementLambda = new cdk.aws_lambda_nodejs.NodejsFunction(
       this,
       "UserManagementFunction",
       {
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-        code: cdk.aws_lambda.Code.fromAsset("../app"),
-        handler: "login.default",
+        entry: path.join(__dirname, "../../app/index.ts"),
+        handler: "index.handler",
       },
     );
 
