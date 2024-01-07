@@ -10,6 +10,8 @@ const config = {
   project: "user-management",
   domainName: "letsendure.com",
   subDomain: "user",
+  repo: "endure-user-management",
+  branch: "main",
 };
 
 const app = new cdk.App();
@@ -19,6 +21,15 @@ new UserManagementStack(app, "UserManagementStack", {
   subDomain: config.subDomain,
   env: {
     name: config.envName,
+    account: config.accountId,
+    region: config.region,
+  },
+});
+
+new UseManagementPipelineStack(app, "UseManagementPipelineStack", {
+  repo: config.repo,
+  branch: config.branch,
+  env: {
     account: config.accountId,
     region: config.region,
   },
