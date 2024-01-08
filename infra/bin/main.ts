@@ -5,9 +5,9 @@ import { UserManagementStack, UserManagementPipeline } from "../lib";
 
 const config = {
   accountId: "022703707499",
+  project: "user-management",
   envName: "prod",
   region: "us-west-2",
-  project: "user-management",
   domainName: "letsendure.com",
   subDomain: "user",
   repo: "endure-user-management",
@@ -19,6 +19,7 @@ const app = new cdk.App();
 new UserManagementStack(app, "UserManagementStack", {
   domainName: config.domainName,
   subDomain: config.subDomain,
+  project: config.project,
   env: {
     name: config.envName,
     account: config.accountId,
