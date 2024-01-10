@@ -1,6 +1,8 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
+import * as path from "path";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
@@ -9,29 +11,30 @@ interface Props extends cdk.StackProps {
   project: string;
   repo: string;
   branch: string;
+  artifactBucket: s3.IBucket;
   env: UserManagementEnvProps;
 }
 export default class UserManagementPipeline extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
 
-    const { project, env, repo, branch } = props;
+    const { project, env, repo, branch, artifactBucket } = props;
 
     const sourceArtifact = new cdk.aws_codepipeline.Artifact("SourceArtifact");
     const buildArtifact = new cdk.aws_codepipeline.Artifact("BuildArtifact");
 
     const buildApp = new cdk.aws_codebuild.Project(this, "BuildApp", {
       buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
-        "./buildspecs/build-app.yaml",
+        path.join(__dirname, "buildspecs/build-app.yaml"),
       ),
       environment: {
         buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
       },
     });
 
-    const lintApp = new cdk.aws_codebuild.Project(this, "BuildUnitTest", {
+    const lintApp = new cdk.aws_codebuild.Project(this, "BuildLint", {
       buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
-        "./buildspecs/lint-test.yaml",
+        path.join(__dirname, "buildspecs/lint.yaml"),
       ),
       environment: {
         buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
@@ -40,7 +43,7 @@ export default class UserManagementPipeline extends cdk.Stack {
 
     const unitTestApp = new cdk.aws_codebuild.Project(this, "BuildUnitTest", {
       buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
-        "./buildspecs/unit-test.yaml",
+        path.join(__dirname, "buildspecs/unit-test.yaml"),
       ),
       environment: {
         buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
@@ -76,7 +79,7 @@ export default class UserManagementPipeline extends cdk.Stack {
     };
 
     const staticTestStage = {
-      stageName: "Static Tests",
+      stageName: "StaticTests",
       actions: [
         new cdk.aws_codepipeline_actions.CodeBuildAction({
           actionName: "Lint",
@@ -93,9 +96,9 @@ export default class UserManagementPipeline extends cdk.Stack {
 
     const lambdaDeployAction = new cdk.aws_codepipeline_actions.S3DeployAction({
       actionName: "S3Deploy",
-      bucket: siteBucket,
+      bucket: artifactBucket,
       input: buildArtifact,
-      // encryptionKey: key,
+      encryptionKey: artifactBucket.encryptionKey,
     });
 
     const deployStage = {

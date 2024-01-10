@@ -1,6 +1,16 @@
 version: 0.2
 
 phases:
+  install:
+    commands:
+      - cd app
+      - yarn install
+
   build:
     commands:
-      - echo Build App - Hello World!
+      - yarn build
+
+artifacts:
+  base-directory: app/dist
+  files:
+    - '**/*'

@@ -16,21 +16,26 @@ const config = {
 
 const app = new cdk.App();
 
-new UserManagementStack(app, "UserManagementStack", {
-  domainName: config.domainName,
-  subDomain: config.subDomain,
-  project: config.project,
-  env: {
-    name: config.envName,
-    account: config.accountId,
-    region: config.region,
+const userManagementStack = new UserManagementStack(
+  app,
+  "UserManagementStack",
+  {
+    domainName: config.domainName,
+    subDomain: config.subDomain,
+    project: config.project,
+    env: {
+      name: config.envName,
+      account: config.accountId,
+      region: config.region,
+    },
   },
-});
+);
 
 new UserManagementPipeline(app, "UseManagementPipelineStack", {
   repo: config.repo,
   branch: config.branch,
   project: config.project,
+  artifactBucket: userManagementStack.artifactBucket,
   env: {
     name: config.envName,
     account: config.accountId,
