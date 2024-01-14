@@ -19,6 +19,8 @@ interface UserManagementProps extends cdk.StackProps {
 export default class UserManagementStack extends cdk.Stack {
   public readonly lambdaFunctionName: string;
 
+  public readonly lambdaFunctionArn: string;
+
   constructor(scope: Construct, id: string, props: UserManagementProps) {
     super(scope, id, props);
 
@@ -36,6 +38,7 @@ export default class UserManagementStack extends cdk.Stack {
     );
 
     this.lambdaFunctionName = userManagementLambda.functionName;
+    this.lambdaFunctionArn = userManagementLambda.functionArn;
 
     const api = new cdk.aws_apigateway.LambdaRestApi(
       this,

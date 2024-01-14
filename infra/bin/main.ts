@@ -31,7 +31,7 @@ const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
   },
 );
 
-const { lambdaFunctionName } = new UserManagementStack(
+const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   app,
   "UserManagementStack",
   {
@@ -53,6 +53,7 @@ new UserManagementPipeline(app, "UseManagementPipelineStack", {
   branch: config.branch,
   project: config.project,
   lambdaFunctionName,
+  lambdaFunctionArn,
   artifactBucket,
   apiBuildBucketKey: buildArtifactKey,
   env: {
