@@ -11,6 +11,6 @@ phases:
       - yarn build
 
 artifacts:
-  base-directory: app/dist
+  base-directory: dist
   files:
-    - '**/*'
+    - 'index.zip'

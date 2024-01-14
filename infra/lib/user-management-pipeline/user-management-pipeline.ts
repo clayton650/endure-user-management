@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
 import * as path from "path";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
@@ -10,13 +11,24 @@ interface Props extends cdk.StackProps {
   project: string;
   repo: string;
   branch: string;
+  artifactBucket: s3.IBucket;
+  apiBuildBucketKey: string;
+  lambdaFunctionName: string;
   env: UserManagementEnvProps;
 }
 export default class UserManagementPipeline extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
 
-    const { project, env, repo, branch } = props;
+    const {
+      project,
+      env,
+      repo,
+      branch,
+      artifactBucket,
+      apiBuildBucketKey,
+      lambdaFunctionName,
+    } = props;
 
     const sourceArtifact = new cdk.aws_codepipeline.Artifact("SourceArtifact");
     const buildArtifact = new cdk.aws_codepipeline.Artifact("BuildArtifact");
@@ -45,6 +57,20 @@ export default class UserManagementPipeline extends cdk.Stack {
       ),
       environment: {
         buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
+      },
+    });
+
+    const deployApp = new cdk.aws_codebuild.Project(this, "Deploy", {
+      buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
+        path.join(__dirname, "buildspecs/deploy.yaml"),
+      ),
+      environment: {
+        buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
+        environmentVariables: {
+          FUNCTION_NAME: { value: lambdaFunctionName },
+          S3_BUCKET: { value: artifactBucket.bucketName },
+          S3_KEY: { value: apiBuildBucketKey },
+        },
       },
     });
 
@@ -92,15 +118,31 @@ export default class UserManagementPipeline extends cdk.Stack {
       ],
     };
 
-    // const lambdaArtifactDeployAction =
-    //   new cdk.aws_codepipeline_actions.CloudFormationCreateUpdateStackAction(
-    //     {},
-    //   );
+    const deployStage = {
+      stageName: "Deploy",
+      actions: [
+        new cdk.aws_codepipeline_actions.S3DeployAction({
+          actionName: "DeployBuild",
+          bucket: s3.Bucket.fromBucketName(
+            this,
+            "ArtifactBucket",
+            artifactBucket.bucketName,
+          ),
+          objectKey: apiBuildBucketKey,
+          input: buildArtifact,
+        }),
+        new cdk.aws_codepipeline_actions.CodeBuildAction({
+          actionName: "UpdateLambda",
+          project: deployApp,
+          input: buildArtifact,
+        }),
+      ],
+    };
 
     new cdk.aws_codepipeline.Pipeline(this, "BuildDeployPipeline", {
       pipelineName: `${env.name}-${project}-pipeline`,
       restartExecutionOnUpdate: true,
-      stages: [sourceStage, staticTestStage, buildStage],
+      stages: [sourceStage, staticTestStage, buildStage, deployStage],
     });
   }
 }

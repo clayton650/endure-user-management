@@ -31,23 +31,30 @@ const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
   },
 );
 
-new UserManagementStack(app, "UserManagementStack", {
-  domainName: config.domainName,
-  subDomain: config.subDomain,
-  project: config.project,
-  artifactBucket,
-  apiBuildBucketKey: buildArtifactKey,
-  env: {
-    name: config.envName,
-    account: config.accountId,
-    region: config.region,
+const { lambdaFunctionName } = new UserManagementStack(
+  app,
+  "UserManagementStack",
+  {
+    domainName: config.domainName,
+    subDomain: config.subDomain,
+    project: config.project,
+    artifactBucket,
+    apiBuildBucketKey: buildArtifactKey,
+    env: {
+      name: config.envName,
+      account: config.accountId,
+      region: config.region,
+    },
   },
-});
+);
 
 new UserManagementPipeline(app, "UseManagementPipelineStack", {
   repo: config.repo,
   branch: config.branch,
   project: config.project,
+  lambdaFunctionName,
+  artifactBucket,
+  apiBuildBucketKey: buildArtifactKey,
   env: {
     name: config.envName,
     account: config.accountId,
