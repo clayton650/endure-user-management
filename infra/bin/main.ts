@@ -1,7 +1,11 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import { UserManagementStack, UserManagementPipeline } from "../lib";
+import {
+  UserManagementBucketStack,
+  UserManagementStack,
+  UserManagementPipeline,
+} from "../lib";
 
 const config = {
   accountId: "022703707499",
@@ -15,6 +19,13 @@ const config = {
 };
 
 const app = new cdk.App();
+
+new UserManagementBucketStack(app, "UserManagementBucketStack", {
+  project: config.project,
+  env: {
+    name: config.envName,
+  },
+});
 
 new UserManagementStack(app, "UserManagementStack", {
   domainName: config.domainName,
