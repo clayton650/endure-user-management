@@ -2,34 +2,40 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { CfnOutput } from "aws-cdk-lib";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
-import * as path from "path";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
 }
 interface UserManagementProps extends cdk.StackProps {
+  project: string;
   domainName: string;
   subDomain: string;
+  artifactBucket: s3.IBucket;
+  apiBuildBucketKey: string;
   env: UserManagementEnvProps;
 }
 
 export default class UserManagementStack extends cdk.Stack {
+  public readonly lambdaFunctionName: string;
+
   constructor(scope: Construct, id: string, props: UserManagementProps) {
     super(scope, id, props);
 
-    const { domainName, subDomain, env } = props;
+    const { domainName, subDomain, env, artifactBucket, apiBuildBucketKey } =
+      props;
 
-    const userManagementLambda = new cdk.aws_lambda_nodejs.NodejsFunction(
+    const userManagementLambda = new cdk.aws_lambda.Function(
       this,
       "UserManagementFunction",
       {
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-        projectRoot: path.join(__dirname, "../../app"),
-        depsLockFilePath: path.join(__dirname, "../../app/yarn.lock"),
-        entry: path.join(__dirname, "../../app/index.ts"),
+        code: cdk.aws_lambda.Code.fromBucket(artifactBucket, apiBuildBucketKey),
         handler: "index.handler",
       },
     );
+
+    this.lambdaFunctionName = userManagementLambda.functionName;
 
     const api = new cdk.aws_apigateway.LambdaRestApi(
       this,
@@ -40,7 +46,6 @@ export default class UserManagementStack extends cdk.Stack {
       },
     );
     const loginResource = api.root.addResource("login");
-
     loginResource.addMethod("POST");
 
     const hostedZone = cdk.aws_route53.HostedZone.fromLookup(

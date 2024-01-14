@@ -1,0 +1,18 @@
+version: 0.2
+
+phases:
+  install:
+    commands:
+      - cd app
+      - yarn install
+
+  build:
+    commands:
+      - yarn build
+      - ls
+      - ls dist
+
+artifacts:
+  base-directory: app
+  file:
+    - 'dist/index.zip'
