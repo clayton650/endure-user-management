@@ -14,6 +14,7 @@ interface Props extends cdk.StackProps {
   artifactBucket: s3.IBucket;
   apiBuildBucketKey: string;
   lambdaFunctionName: string;
+  lambdaFunctionArn: string;
   env: UserManagementEnvProps;
 }
 export default class UserManagementPipeline extends cdk.Stack {
@@ -25,9 +26,8 @@ export default class UserManagementPipeline extends cdk.Stack {
       env,
       repo,
       branch,
-      artifactBucket,
-      apiBuildBucketKey,
       lambdaFunctionName,
+      lambdaFunctionArn,
     } = props;
 
     const sourceArtifact = new cdk.aws_codepipeline.Artifact("SourceArtifact");
@@ -69,8 +69,6 @@ export default class UserManagementPipeline extends cdk.Stack {
         environmentVariables: {
           FUNCTION_NAME: { value: lambdaFunctionName },
           KEY: { value: "index.zip" },
-          // S3_BUCKET: { value: artifactBucket.bucketName },
-          // S3_KEY: { value: apiBuildBucketKey },
         },
       },
     });
@@ -119,25 +117,26 @@ export default class UserManagementPipeline extends cdk.Stack {
       ],
     };
 
+    deployApp.addToRolePolicy(
+      new cdk.aws_iam.PolicyStatement({
+        sid: "AllowCodebuildToUpdateLambda",
+        effect: cdk.aws_iam.Effect.ALLOW,
+        actions: ["lambda:UpdateFunctionCode"],
+        resources: [lambdaFunctionArn],
+      }),
+    );
+
+    const lambdaUpdateAction = new cdk.aws_codepipeline_actions.CodeBuildAction(
+      {
+        actionName: "UpdateLambda",
+        project: deployApp,
+        input: buildArtifact,
+      },
+    );
+
     const deployStage = {
       stageName: "Deploy",
-      actions: [
-        // new cdk.aws_codepipeline_actions.S3DeployAction({
-        //   actionName: "DeployBuild",
-        //   bucket: s3.Bucket.fromBucketName(
-        //     this,
-        //     "ArtifactBucket",
-        //     artifactBucket.bucketName,
-        //   ),
-        //   objectKey: apiBuildBucketKey,
-        //   input: buildArtifact,
-        // }),
-        new cdk.aws_codepipeline_actions.CodeBuildAction({
-          actionName: "UpdateLambda",
-          project: deployApp,
-          input: buildArtifact,
-        }),
-      ],
+      actions: [lambdaUpdateAction],
     };
 
     new cdk.aws_codepipeline.Pipeline(this, "BuildDeployPipeline", {

@@ -3,6 +3,4 @@ version: 0.2
 phases:
   build:
     commands:
-      - echo "Deploying the app"
-      - ls
-      - aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://"index.zip"
+      - aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://$KEY
