@@ -14,9 +14,18 @@ interface Props extends cdk.StackProps {
 }
 
 export default class UserManagementArtifactBucketStack extends cdk.Stack {
-  artifactBucket: s3.IBucket;
+  private readonly bucketArtifactPath = "api/dist";
 
-  buildArtifactKey: string;
+  private readonly buildArtifactFileName = "index.zip";
+
+  private readonly localBuildArtifactPath = path.join(
+    __dirname,
+    `../../app/dist/${this.buildArtifactFileName}`,
+  );
+
+  readonly artifactBucket: s3.IBucket;
+
+  readonly buildArtifactKey = `${this.bucketArtifactPath}/${this.buildArtifactFileName}`;
 
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
@@ -30,18 +39,9 @@ export default class UserManagementArtifactBucketStack extends cdk.Stack {
       blockPublicAccess: cdk.aws_s3.BlockPublicAccess.BLOCK_ALL,
     });
 
-    // Boostrap the bucket
-    // TODO: get app values from app's package json?
-    const bucketArtifactPath = "api/dist";
-    const buildArtifactFileName = "index.zip";
-    this.buildArtifactKey = `${bucketArtifactPath}/${buildArtifactFileName}`;
-    const localBuildArtifactPath = path.join(
-      __dirname,
-      `../../app/dist/${buildArtifactFileName}`,
-    );
-
+    // Boostrap the bucket with the current build artifact
     const bucketArtifactSource = cdk.aws_s3_deployment.Source.asset(
-      localBuildArtifactPath,
+      this.localBuildArtifactPath,
     );
 
     const bootstrapArtifactSourceBucketDeployment =
@@ -51,7 +51,7 @@ export default class UserManagementArtifactBucketStack extends cdk.Stack {
         {
           sources: [bucketArtifactSource],
           destinationBucket: this.artifactBucket,
-          destinationKeyPrefix: bucketArtifactPath,
+          destinationKeyPrefix: this.bucketArtifactPath,
           extract: false,
         },
       );
@@ -61,7 +61,7 @@ export default class UserManagementArtifactBucketStack extends cdk.Stack {
       bootstrapArtifactSourceBucketDeployment.objectKeys,
     );
 
-    const originalBuildArtifactKey = `${bucketArtifactPath}/${currentBuildArtifactFileName}`;
+    const originalBuildArtifactKey = `${this.bucketArtifactPath}/${currentBuildArtifactFileName}`;
 
     const renameBoostrapArtifactCustomResource =
       new cdk.custom_resources.AwsCustomResource(

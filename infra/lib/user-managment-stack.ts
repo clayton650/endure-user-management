@@ -1,12 +1,8 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { CfnOutput, Fn } from "aws-cdk-lib";
-import * as s3 from "aws-cdk-lib/aws-s3";
+import { CfnOutput } from "aws-cdk-lib";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
-import * as path from "path";
-import { Asset } from "aws-cdk-lib/aws-s3-assets";
-import { ISource, Source } from "aws-cdk-lib/aws-s3-deployment";
-import * as fs from "fs";
+import * as s3 from "aws-cdk-lib/aws-s3";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
@@ -15,6 +11,8 @@ interface UserManagementProps extends cdk.StackProps {
   project: string;
   domainName: string;
   subDomain: string;
+  artifactBucket: s3.IBucket;
+  apiBuildBucketKey: string;
   env: UserManagementEnvProps;
 }
 
@@ -22,22 +20,15 @@ export default class UserManagementStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: UserManagementProps) {
     super(scope, id, props);
 
-    const { domainName, subDomain, env } = props;
-
-    // TODO: get app values from app's package json?
-    const localBuildArtifactFileName = "index.zip";
-
-    const localBuildArtifact = path.join(
-      __dirname,
-      `../../app/dist/${localBuildArtifactFileName}`,
-    );
+    const { domainName, subDomain, env, artifactBucket, apiBuildBucketKey } =
+      props;
 
     const userManagementLambda = new cdk.aws_lambda.Function(
       this,
       "UserManagementFunction",
       {
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-        code: cdk.aws_lambda.Code.fromAsset(localBuildArtifact),
+        code: cdk.aws_lambda.Code.fromBucket(artifactBucket, apiBuildBucketKey),
         handler: "index.handler",
       },
     );

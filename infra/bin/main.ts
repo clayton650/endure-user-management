@@ -20,17 +20,23 @@ const config = {
 
 const app = new cdk.App();
 
-new UserManagementBucketStack(app, "UserManagementBucketStack", {
-  project: config.project,
-  env: {
-    name: config.envName,
+const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
+  app,
+  "UserManagementBucketStack",
+  {
+    project: config.project,
+    env: {
+      name: config.envName,
+    },
   },
-});
+);
 
 new UserManagementStack(app, "UserManagementStack", {
   domainName: config.domainName,
   subDomain: config.subDomain,
   project: config.project,
+  artifactBucket,
+  apiBuildBucketKey: buildArtifactKey,
   env: {
     name: config.envName,
     account: config.accountId,
