@@ -9,8 +9,6 @@ phases:
   build:
     commands:
       - yarn build
-      - ls
-      - ls dist
 
 artifacts:
   base-directory: app

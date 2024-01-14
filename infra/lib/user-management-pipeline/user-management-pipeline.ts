@@ -68,8 +68,9 @@ export default class UserManagementPipeline extends cdk.Stack {
         buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
         environmentVariables: {
           FUNCTION_NAME: { value: lambdaFunctionName },
-          S3_BUCKET: { value: artifactBucket.bucketName },
-          S3_KEY: { value: apiBuildBucketKey },
+          KEY: { value: "index.zip" },
+          // S3_BUCKET: { value: artifactBucket.bucketName },
+          // S3_KEY: { value: apiBuildBucketKey },
         },
       },
     });
@@ -121,16 +122,16 @@ export default class UserManagementPipeline extends cdk.Stack {
     const deployStage = {
       stageName: "Deploy",
       actions: [
-        new cdk.aws_codepipeline_actions.S3DeployAction({
-          actionName: "DeployBuild",
-          bucket: s3.Bucket.fromBucketName(
-            this,
-            "ArtifactBucket",
-            artifactBucket.bucketName,
-          ),
-          objectKey: apiBuildBucketKey,
-          input: buildArtifact,
-        }),
+        // new cdk.aws_codepipeline_actions.S3DeployAction({
+        //   actionName: "DeployBuild",
+        //   bucket: s3.Bucket.fromBucketName(
+        //     this,
+        //     "ArtifactBucket",
+        //     artifactBucket.bucketName,
+        //   ),
+        //   objectKey: apiBuildBucketKey,
+        //   input: buildArtifact,
+        // }),
         new cdk.aws_codepipeline_actions.CodeBuildAction({
           actionName: "UpdateLambda",
           project: deployApp,
