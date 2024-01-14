@@ -9,8 +9,10 @@ phases:
   build:
     commands:
       - yarn build
+      - ls
+      - ls dist
 
 artifacts:
-  base-directory: dist
-  files:
-    - 'index.zip'
+  base-directory: app
+  file:
+    - 'dist/index.zip'
