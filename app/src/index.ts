@@ -1,12 +1,15 @@
-import { APIGatewayProxyHandler } from "aws-lambda";
+import express, { Express, Request, Response } from "express";
+import * as dotenv from "dotenv";
 
-export const handler: APIGatewayProxyHandler = async (event) => {
-  console.log(event);
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message:
-        "Hello from user management's new lambda! Checking if the pipeline works!",
-    }),
-  };
-};
+dotenv.config();
+
+const index: Express = express();
+const port = process.env.PORT;
+
+index.get("/", (req: Request, res: Response) => {
+  res.send("Hello World!");
+});
+
+index.listen(port, () => {
+  console.log(`Example app listening on port ${port}`);
+});
