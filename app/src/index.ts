@@ -1,12 +1,3 @@
-import { APIGatewayProxyHandler } from "aws-lambda";
+import loginHandler from "./login/lambda";
 
-export const handler: APIGatewayProxyHandler = async (event) => {
-  console.log(event);
-  return {
-    statusCode: 200,
-    body: JSON.stringify({
-      message:
-        "Hello from user management's new lambda! Checking if the pipeline works!",
-    }),
-  };
-};
+export { loginHandler };
