@@ -10,5 +10,5 @@ await esbuild.build({
   minify: true,
   sourcemap: true,
   platform: 'node',
-  outfile: 'dist/handler.js',
+  outfile: 'dist/lambda.js',
 })

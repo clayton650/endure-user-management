@@ -3,13 +3,15 @@ import * as dotenv from "dotenv";
 
 dotenv.config();
 
-const index: Express = express();
+const app: Express = express();
 const port = process.env.PORT;
 
-index.get("/", (req: Request, res: Response) => {
+app.get("/", (req: Request, res: Response) => {
   res.send("Hello World!");
 });
 
-index.listen(port, () => {
+app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);
 });
+
+export default app;
