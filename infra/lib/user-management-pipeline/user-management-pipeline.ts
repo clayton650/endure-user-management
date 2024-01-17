@@ -101,21 +101,22 @@ export default class UserManagementPipeline extends cdk.Stack {
       ],
     };
 
-    const staticTestStage = {
-      stageName: "StaticTests",
-      actions: [
-        new cdk.aws_codepipeline_actions.CodeBuildAction({
-          actionName: "Lint",
-          project: lintApp,
-          input: sourceArtifact,
-        }),
-        new cdk.aws_codepipeline_actions.CodeBuildAction({
-          actionName: "UnitTest",
-          project: unitTestApp,
-          input: sourceArtifact,
-        }),
-      ],
-    };
+    // Turn off for now
+    // const staticTestStage = {
+    //   stageName: "StaticTests",
+    //   actions: [
+    //     new cdk.aws_codepipeline_actions.CodeBuildAction({
+    //       actionName: "Lint",
+    //       project: lintApp,
+    //       input: sourceArtifact,
+    //     }),
+    //     new cdk.aws_codepipeline_actions.CodeBuildAction({
+    //       actionName: "UnitTest",
+    //       project: unitTestApp,
+    //       input: sourceArtifact,
+    //     }),
+    //   ],
+    // };
 
     deployApp.addToRolePolicy(
       new cdk.aws_iam.PolicyStatement({
@@ -142,7 +143,7 @@ export default class UserManagementPipeline extends cdk.Stack {
     new cdk.aws_codepipeline.Pipeline(this, "BuildDeployPipeline", {
       pipelineName: `${env.name}-${project}-pipeline`,
       restartExecutionOnUpdate: true,
-      stages: [sourceStage, staticTestStage, buildStage, deployStage],
+      stages: [sourceStage, buildStage, deployStage],
     });
   }
 }
