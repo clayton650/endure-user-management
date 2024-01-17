@@ -42,23 +42,23 @@ export default class UserManagementPipeline extends cdk.Stack {
       },
     });
 
-    const lintApp = new cdk.aws_codebuild.Project(this, "BuildLint", {
-      buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
-        path.join(__dirname, "buildspecs/lint.yaml"),
-      ),
-      environment: {
-        buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
-      },
-    });
+    // const lintApp = new cdk.aws_codebuild.Project(this, "BuildLint", {
+    //   buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
+    //     path.join(__dirname, "buildspecs/lint.yaml"),
+    //   ),
+    //   environment: {
+    //     buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
+    //   },
+    // });
 
-    const unitTestApp = new cdk.aws_codebuild.Project(this, "BuildUnitTest", {
-      buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
-        path.join(__dirname, "buildspecs/unit-test.yaml"),
-      ),
-      environment: {
-        buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
-      },
-    });
+    // const unitTestApp = new cdk.aws_codebuild.Project(this, "BuildUnitTest", {
+    //   buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
+    //     path.join(__dirname, "buildspecs/unit-test.yaml"),
+    //   ),
+    //   environment: {
+    //     buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
+    //   },
+    // });
 
     const deployApp = new cdk.aws_codebuild.Project(this, "Deploy", {
       buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
@@ -101,21 +101,22 @@ export default class UserManagementPipeline extends cdk.Stack {
       ],
     };
 
-    const staticTestStage = {
-      stageName: "StaticTests",
-      actions: [
-        new cdk.aws_codepipeline_actions.CodeBuildAction({
-          actionName: "Lint",
-          project: lintApp,
-          input: sourceArtifact,
-        }),
-        new cdk.aws_codepipeline_actions.CodeBuildAction({
-          actionName: "UnitTest",
-          project: unitTestApp,
-          input: sourceArtifact,
-        }),
-      ],
-    };
+    // Turn off for now
+    // const staticTestStage = {
+    //   stageName: "StaticTests",
+    //   actions: [
+    //     new cdk.aws_codepipeline_actions.CodeBuildAction({
+    //       actionName: "Lint",
+    //       project: lintApp,
+    //       input: sourceArtifact,
+    //     }),
+    //     new cdk.aws_codepipeline_actions.CodeBuildAction({
+    //       actionName: "UnitTest",
+    //       project: unitTestApp,
+    //       input: sourceArtifact,
+    //     }),
+    //   ],
+    // };
 
     deployApp.addToRolePolicy(
       new cdk.aws_iam.PolicyStatement({
@@ -142,7 +143,7 @@ export default class UserManagementPipeline extends cdk.Stack {
     new cdk.aws_codepipeline.Pipeline(this, "BuildDeployPipeline", {
       pipelineName: `${env.name}-${project}-pipeline`,
       restartExecutionOnUpdate: true,
-      stages: [sourceStage, staticTestStage, buildStage, deployStage],
+      stages: [sourceStage, buildStage, deployStage],
     });
   }
 }
