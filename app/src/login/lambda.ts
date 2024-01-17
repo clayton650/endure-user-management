@@ -15,10 +15,13 @@ export default function handler(
       }),
     };
   } catch (error) {
-    console.error(error);
+    console.log("Login Lambda Error:", error);
 
     return {
       statusCode: 500,
+      body: JSON.stringify({
+        message: `Something went wrong! Error: ${error}`,
+      }),
     };
   }
 }
