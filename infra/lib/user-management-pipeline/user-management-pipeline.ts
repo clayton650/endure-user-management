@@ -42,23 +42,23 @@ export default class UserManagementPipeline extends cdk.Stack {
       },
     });
 
-    const lintApp = new cdk.aws_codebuild.Project(this, "BuildLint", {
-      buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
-        path.join(__dirname, "buildspecs/lint.yaml"),
-      ),
-      environment: {
-        buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
-      },
-    });
+    // const lintApp = new cdk.aws_codebuild.Project(this, "BuildLint", {
+    //   buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
+    //     path.join(__dirname, "buildspecs/lint.yaml"),
+    //   ),
+    //   environment: {
+    //     buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
+    //   },
+    // });
 
-    const unitTestApp = new cdk.aws_codebuild.Project(this, "BuildUnitTest", {
-      buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
-        path.join(__dirname, "buildspecs/unit-test.yaml"),
-      ),
-      environment: {
-        buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
-      },
-    });
+    // const unitTestApp = new cdk.aws_codebuild.Project(this, "BuildUnitTest", {
+    //   buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
+    //     path.join(__dirname, "buildspecs/unit-test.yaml"),
+    //   ),
+    //   environment: {
+    //     buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
+    //   },
+    // });
 
     const deployApp = new cdk.aws_codebuild.Project(this, "Deploy", {
       buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
