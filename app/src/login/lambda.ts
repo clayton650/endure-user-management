@@ -15,7 +15,7 @@ export default function handler(
       }),
     };
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     return {
       statusCode: 500,
