@@ -1,6 +1,8 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import login from "./login";
 
+// TODO: CORS
+// TODO: Docs
 export default async function handler(
   _event: APIGatewayProxyEvent,
   _context: APIGatewayProxyResult,
