@@ -1,12 +1,12 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import login from "./login";
 
-export default function handler(
+export default async function handler(
   _event: APIGatewayProxyEvent,
   _context: APIGatewayProxyResult,
 ) {
   try {
-    login();
+    await login();
 
     return {
       statusCode: 200,
