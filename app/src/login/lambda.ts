@@ -13,6 +13,10 @@ export default function handler(
       body: JSON.stringify({
         message: "Hello from user management's login lambda!",
       }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      isBase64Encoded: false,
     };
   } catch (error) {
     console.log("Login Lambda Error:", error);
@@ -22,6 +26,10 @@ export default function handler(
       body: JSON.stringify({
         message: `Something went wrong! Error: ${error}`,
       }),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      isBase64Encoded: false,
     };
   }
 }
