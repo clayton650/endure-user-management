@@ -48,7 +48,7 @@ export default class UserManagementStack extends cdk.Stack {
         proxy: false,
       },
     );
-    const loginResource = api.root.addResource("login");
+    const loginResource = api.root.addResource("auth");
     loginResource.addMethod("POST");
 
     const hostedZone = cdk.aws_route53.HostedZone.fromLookup(

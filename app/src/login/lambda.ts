@@ -12,6 +12,7 @@ export default async function handler(
 
     return {
       statusCode: 200,
+      headers: { "Access-Control-Allow-Origin": "*" },
       body: JSON.stringify({
         message: "Hello from user management's login lambda!",
       }),
