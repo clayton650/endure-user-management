@@ -40,14 +40,22 @@ export default class UserManagementStack extends cdk.Stack {
     this.lambdaFunctionName = userManagementLambda.functionName;
     this.lambdaFunctionArn = userManagementLambda.functionArn;
 
+    // TODO: add condition to limit localhost alllowOrigin to dev
+    // TODO: limit methods to only those you need?
     const api = new cdk.aws_apigateway.LambdaRestApi(
       this,
       "UserManagementApi",
       {
         handler: userManagementLambda,
         proxy: false,
+        defaultCorsPreflightOptions: {
+          allowOrigins: [`https://www.${domainName}`, "http://localhost:5173"],
+          allowHeaders: cdk.aws_apigateway.Cors.DEFAULT_HEADERS,
+          allowMethods: cdk.aws_apigateway.Cors.ALL_METHODS,
+        },
       },
     );
+
     const loginResource = api.root.addResource("auth");
     loginResource.addMethod("POST");
 
