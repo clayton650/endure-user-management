@@ -20,6 +20,7 @@ const config = {
 
 const app = new cdk.App();
 
+// TODO: remove this stack
 const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
   app,
   "UserManagementBucketStack",
