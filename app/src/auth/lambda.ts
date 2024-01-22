@@ -14,8 +14,11 @@ export default async function handler(
   _context: APIGatewayProxyResult,
 ) {
   try {
-    const body = JSON.parse(event.body || "") as AuthHandlerEventBody;
-    const { accessToken, userId } = body;
+    console.log("APIGatewayProxyEvent:", event);
+    const { body } = event;
+    const { accessToken, userId } = JSON.parse(
+      body || "{}",
+    ) as AuthHandlerEventBody;
 
     if (!accessToken || !userId) {
       throw new MissingRequiredPropertiesError(
