@@ -28,9 +28,14 @@ export default async function handler(
 
     const userAuthInfo = await auth(accessToken, userId);
 
+    // TODO: deal with security implications related to headers and CORS
     return {
       statusCode: 200,
       body: JSON.stringify(userAuthInfo),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
     };
   } catch (err) {
     const error = err as Error;
