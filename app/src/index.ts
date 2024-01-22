@@ -1,4 +1,4 @@
-import loginHandler from "./login/lambda";
+import authHandler from "./auth/lambda";
 
 // eslint-disable-next-line import/prefer-default-export
-export { loginHandler };
+export { authHandler };
