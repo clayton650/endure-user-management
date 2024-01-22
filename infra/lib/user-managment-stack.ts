@@ -33,7 +33,7 @@ export default class UserManagementStack extends cdk.Stack {
       {
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
         code: cdk.aws_lambda.Code.fromBucket(artifactBucket, apiBuildBucketKey),
-        handler: "index.loginHandler",
+        handler: "index.authHandler",
       },
     );
 
