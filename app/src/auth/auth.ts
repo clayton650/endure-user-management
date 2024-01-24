@@ -1,6 +1,7 @@
 type AccessToken = string;
 type UserId = string;
 
+// TODO: move to common types
 interface UserInfo {
   id: string;
   email?: string;
