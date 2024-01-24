@@ -32,10 +32,10 @@ export default async function handler(
     return {
       statusCode: 200,
       body: JSON.stringify(userAuthInfo),
-      // headers: {
-      //   "Content-Type": "application/json",
-      //   "Access-Control-Allow-Origin": "*",
-      // },
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
     };
   } catch (err) {
     const error = err as Error;
