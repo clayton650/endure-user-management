@@ -16,6 +16,7 @@ const config = {
   subDomain: "user",
   repo: "endure-user-management",
   branch: "main",
+  userAuthUrl: "https://auth.letsendure.com",
 };
 
 const app = new cdk.App();
@@ -41,6 +42,7 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
     project: config.project,
     artifactBucket,
     apiBuildBucketKey: buildArtifactKey,
+    userAuthUrl: config.userAuthUrl,
     env: {
       name: config.envName,
       account: config.accountId,

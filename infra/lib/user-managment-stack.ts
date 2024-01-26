@@ -1,11 +1,12 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { CfnOutput } from "aws-cdk-lib";
+import { CfnOutput, SecretValue } from "aws-cdk-lib";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
 import * as s3 from "aws-cdk-lib/aws-s3";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
+  region: string;
 }
 interface UserManagementProps extends cdk.StackProps {
   project: string;
@@ -13,6 +14,7 @@ interface UserManagementProps extends cdk.StackProps {
   subDomain: string;
   artifactBucket: s3.IBucket;
   apiBuildBucketKey: string;
+  userAuthUrl: string;
   env: UserManagementEnvProps;
 }
 
@@ -24,8 +26,27 @@ export default class UserManagementStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: UserManagementProps) {
     super(scope, id, props);
 
-    const { domainName, subDomain, env, artifactBucket, apiBuildBucketKey } =
-      props;
+    const {
+      domainName,
+      subDomain,
+      env,
+      artifactBucket,
+      apiBuildBucketKey,
+      userAuthUrl,
+    } = props;
+
+    const userAuthAPIKeySecret = new cdk.aws_secretsmanager.Secret(
+      this,
+      "UserAuthAPIKeySecret",
+      {
+        secretName: `${env.name}-user-auth-api-key`,
+        secretObjectValue: {
+          userAuthAPIKey: SecretValue.unsafePlainText(
+            "fake-api-key-that-should-be-update-in-secrets-manager",
+          ),
+        },
+      },
+    );
 
     const userManagementLambda = new cdk.aws_lambda.Function(
       this,
@@ -34,8 +55,14 @@ export default class UserManagementStack extends cdk.Stack {
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
         code: cdk.aws_lambda.Code.fromBucket(artifactBucket, apiBuildBucketKey),
         handler: "index.authHandler",
+        environment: {
+          ENV_NAME: env.name,
+          USER_AUTH_URL: userAuthUrl,
+        },
       },
     );
+
+    userAuthAPIKeySecret.grantRead(userManagementLambda);
 
     this.lambdaFunctionName = userManagementLambda.functionName;
     this.lambdaFunctionArn = userManagementLambda.functionArn;
