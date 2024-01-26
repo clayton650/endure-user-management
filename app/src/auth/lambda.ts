@@ -48,6 +48,10 @@ export default async function handler(
           message:
             "Invalid request: Missing required property(ies) in the payload",
         }),
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
       };
     }
 
@@ -57,6 +61,10 @@ export default async function handler(
         body: JSON.stringify({
           message: error.message,
         }),
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
       };
     }
 
@@ -65,6 +73,10 @@ export default async function handler(
       body: JSON.stringify({
         message: `Something went wrong! Error: ${error}`,
       }),
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      },
     };
   }
 }
