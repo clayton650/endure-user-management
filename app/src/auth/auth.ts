@@ -30,6 +30,7 @@ export default async function auth(
     const authHeader = `Bearer ${accessToken}`;
     const propelUser = await validateAccessTokenAndGetUser(authHeader);
 
+    // TODO: is a userId check unnecessary? Do we even need to pass the userId?
     if (userId !== propelUser.userId) {
       throw new UnauthorizedUserError("Not the expected user");
     }
