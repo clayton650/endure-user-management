@@ -1,47 +1,64 @@
+import initBaseAuth from "./propelauth";
+import SecretManagerError from "./SecretManagerError";
+import UnauthorizedUserError from "./UnauthorizedUserError";
+
 type AccessToken = string;
 type UserId = string;
 
 // TODO: move to common types
-interface UserInfo {
+interface User {
   id: string;
   email?: string;
-  emailVerified: boolean;
   firstName: string;
   lastName: string;
   mobile?: string;
-  mobileVerified: boolean;
   pictureUrl: string;
-  humanVerified: boolean;
-  enabled: boolean;
   lastSeen?: string;
 }
 
 interface UserAuthInfo {
   accessToken: AccessToken;
-  userInfo: UserInfo;
+  user: User;
 }
+
 export default async function auth(
   accessToken: AccessToken,
-  userId: UserId,
+  _userId: UserId,
 ): Promise<UserAuthInfo> {
-  console.log("Access Token:", accessToken);
-  console.log("User Id:", userId);
+  try {
+    const { validateAccessTokenAndGetUser } = await initBaseAuth();
+    const propelUser = await validateAccessTokenAndGetUser(accessToken);
 
-  return {
-    accessToken: "1234567890",
-    userInfo: {
-      id: "ABC123",
-      email: "claytonhthompson@gmail.com",
-      firstName: "clayton",
-      lastName: "thompson",
-      emailVerified: true,
-      mobile: undefined,
-      mobileVerified: false,
-      pictureUrl:
-        "https://nwn.blogs.com/.a/6a00d8341bf74053ef0240a46b144f200c-800wi",
+    // TODO: get cognito access token
+    const cognitoAccessToken = "1234567890";
+
+    const userMobile = "1-555-555-5555";
+
+    // TODO: has paid bill (subscription level)
+
+    const user = {
+      id: propelUser.userId,
+      email: propelUser.email,
+      firstName: propelUser.firstName!,
+      lastName: propelUser.lastName!,
+      mobile: userMobile,
+      pictureUrl: propelUser.metadata?.pictureUrl,
       humanVerified: true,
-      enabled: true,
-      lastSeen: Date.now().toString(),
-    },
-  };
+      lastSeen: propelUser.metadata?.lastSeen?.toString(),
+    };
+
+    return {
+      accessToken: cognitoAccessToken,
+      user,
+    };
+  } catch (e) {
+    const error = e as Error;
+    if (error! instanceof SecretManagerError) {
+      console.log("Auth error - UnauthorizedUserError:", error);
+      throw new UnauthorizedUserError(`Unauthorized user: ${error.message}`);
+    }
+
+    console.log("Auth error:", error);
+    throw error;
+  }
 }
