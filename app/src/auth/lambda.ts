@@ -1,6 +1,7 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import auth from "./auth";
 import MissingRequiredPropertiesError from "../common/MissingRequiredPropertiesError";
+import UnauthorizedUserError from "./UnauthorizedUserError";
 
 interface AuthHandlerEventBody {
   accessToken: string;
@@ -14,7 +15,6 @@ export default async function handler(
   _context: APIGatewayProxyResult,
 ) {
   try {
-    console.log("APIGatewayProxyEvent:", event);
     const { body } = event;
     const { accessToken, userId } = JSON.parse(
       body || "{}",
@@ -50,6 +50,16 @@ export default async function handler(
         }),
       };
     }
+
+    if (error instanceof UnauthorizedUserError) {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({
+          message: error.message,
+        }),
+      };
+    }
+
     return {
       statusCode: 500,
       body: JSON.stringify({
