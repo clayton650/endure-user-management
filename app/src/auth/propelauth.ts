@@ -24,9 +24,9 @@ export default async function initBaseAuth() {
   }
 
   // TODO: add env class wrapper that includes error message if env vars are missing
-
+  // TODO: should secret and auth url include "propel", reason they should be generic? or is that confusing?
   return propelAuth.initBaseAuth({
-    authUrl: process.env.PROPEL_AUTH_URL as string,
+    authUrl: process.env.USER_AUTH_URL as string,
     apiKey: userAuthAPIKey,
   });
 }
