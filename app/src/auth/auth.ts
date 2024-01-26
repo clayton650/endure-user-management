@@ -23,18 +23,22 @@ interface UserAuthInfo {
 
 export default async function auth(
   accessToken: AccessToken,
-  _userId: UserId,
+  userId: UserId,
 ): Promise<UserAuthInfo> {
   try {
     const { validateAccessTokenAndGetUser } = await initBaseAuth();
-    const propelUser = await validateAccessTokenAndGetUser(accessToken);
+    const authHeader = `Bearer ${accessToken}`;
+    const propelUser = await validateAccessTokenAndGetUser(authHeader);
+
+    if (userId !== propelUser.userId) {
+      throw new UnauthorizedUserError("Not the expected user");
+    }
 
     // TODO: get cognito access token
     const cognitoAccessToken = "1234567890";
-
     const userMobile = "1-555-555-5555";
-
     // TODO: has paid bill (subscription level)
+    // TODO: move user related info to another endpoint/function?
 
     const user = {
       id: propelUser.userId,
