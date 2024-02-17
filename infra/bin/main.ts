@@ -6,6 +6,7 @@ import {
   UserManagementStack,
   UserManagementPipeline,
 } from "../lib";
+import UserPoolStack from "../lib/user-pool-stack";
 
 const config = {
   accountId: "022703707499",
@@ -33,6 +34,10 @@ const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
   },
 );
 
+const { userPoolArn } = new UserPoolStack(app, "UserPoolStack", {
+  env: { name: config.envName },
+});
+
 const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   app,
   "UserManagementStack",
@@ -43,6 +48,7 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
     artifactBucket,
     apiBuildBucketKey: buildArtifactKey,
     userAuthUrl: config.userAuthUrl,
+    userPoolArn,
     env: {
       name: config.envName,
       account: config.accountId,

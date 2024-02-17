@@ -1,6 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { CfnOutput, SecretValue } from "aws-cdk-lib";
+import * as iam from "aws-cdk-lib/aws-iam";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
 import * as s3 from "aws-cdk-lib/aws-s3";
 
@@ -15,6 +16,7 @@ interface UserManagementProps extends cdk.StackProps {
   artifactBucket: s3.IBucket;
   apiBuildBucketKey: string;
   userAuthUrl: string;
+  userPoolArn: string;
   env: UserManagementEnvProps;
 }
 
@@ -33,6 +35,7 @@ export default class UserManagementStack extends cdk.Stack {
       artifactBucket,
       apiBuildBucketKey,
       userAuthUrl,
+      userPoolArn,
     } = props;
 
     const userAuthAPIKeySecret = new cdk.aws_secretsmanager.Secret(
@@ -48,6 +51,7 @@ export default class UserManagementStack extends cdk.Stack {
       },
     );
 
+    // TODO: rename lambda function to something more specific (authLambda?)
     const userManagementLambda = new cdk.aws_lambda.Function(
       this,
       "UserManagementFunction",
@@ -63,6 +67,17 @@ export default class UserManagementStack extends cdk.Stack {
     );
 
     userAuthAPIKeySecret.grantRead(userManagementLambda);
+
+    userManagementLambda.addToRolePolicy(
+      new iam.PolicyStatement({
+        actions: [
+          "cognito-idp:AdminCreateUser",
+          "cognito-idp:AdminInitiateAuth",
+          "cognito-idp:AdminRespondToAuthChallenge",
+        ],
+        resources: [userPoolArn],
+      }),
+    );
 
     this.lambdaFunctionName = userManagementLambda.functionName;
     this.lambdaFunctionArn = userManagementLambda.functionArn;
