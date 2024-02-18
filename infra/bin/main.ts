@@ -22,7 +22,7 @@ const config = {
 
 const app = new cdk.App();
 
-// TODO: remove this stack
+// TODO: remove this stack, requires reworking below stacks
 const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
   app,
   "UserManagementBucketStack",
@@ -34,9 +34,17 @@ const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
   },
 );
 
-const { userPoolArn } = new UserPoolStack(app, "UserPoolStack", {
-  env: { name: config.envName },
-});
+const { userPoolArn, userPoolId, userPoolClientId } = new UserPoolStack(
+  app,
+  "UserPoolStack",
+  {
+    env: {
+      name: config.envName,
+      account: config.accountId,
+      region: config.region,
+    },
+  },
+);
 
 const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   app,
@@ -49,6 +57,8 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
     apiBuildBucketKey: buildArtifactKey,
     userAuthUrl: config.userAuthUrl,
     userPoolArn,
+    userPoolId,
+    UserPoolClientId,
     env: {
       name: config.envName,
       account: config.accountId,

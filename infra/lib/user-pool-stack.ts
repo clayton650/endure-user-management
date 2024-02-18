@@ -13,6 +13,10 @@ interface Props extends cdk.StackProps {
 export default class UserPoolStack extends cdk.Stack {
   public readonly userPoolArn: string;
 
+  public readonly userPoolId: string;
+
+  public readonly userPoolClientId: string;
+
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
 
@@ -26,11 +30,13 @@ export default class UserPoolStack extends cdk.Stack {
       },
     });
 
-    this.userPoolArn = userPool.userPoolArn;
-
-    new UserPoolClient(this, "AppClient", {
+    const userPoolClient = new UserPoolClient(this, "AppClient", {
       userPool,
-      generateSecret: false,
+      generateSecret: true,
     });
+
+    this.userPoolArn = userPool.userPoolArn;
+    this.userPoolId = userPool.userPoolId;
+    this.userPoolClientId = userPoolClient.userPoolClientId;
   }
 }

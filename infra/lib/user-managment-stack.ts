@@ -17,6 +17,8 @@ interface UserManagementProps extends cdk.StackProps {
   apiBuildBucketKey: string;
   userAuthUrl: string;
   userPoolArn: string;
+  userPoolId: string;
+  userPoolClientId: string;
   env: UserManagementEnvProps;
 }
 
@@ -36,6 +38,8 @@ export default class UserManagementStack extends cdk.Stack {
       apiBuildBucketKey,
       userAuthUrl,
       userPoolArn,
+      userPoolId,
+      userPoolClientId,
     } = props;
 
     const userAuthAPIKeySecret = new cdk.aws_secretsmanager.Secret(
@@ -51,7 +55,7 @@ export default class UserManagementStack extends cdk.Stack {
       },
     );
 
-    // TODO: rename lambda function to something more specific (authLambda?)
+    // TODO: rename lambda function to something more specific
     const userManagementLambda = new cdk.aws_lambda.Function(
       this,
       "UserManagementFunction",
@@ -62,6 +66,8 @@ export default class UserManagementStack extends cdk.Stack {
         environment: {
           ENV_NAME: env.name,
           USER_AUTH_URL: userAuthUrl,
+          USER_POOL_ID: userPoolId,
+          USER_POOL_CLIENT_ID: userPoolClientId,
         },
       },
     );
