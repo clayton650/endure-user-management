@@ -34,17 +34,13 @@ const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
   },
 );
 
-const { userPoolArn, userPoolId, userPoolClientId } = new UserPoolStack(
-  app,
-  "UserPoolStack",
-  {
-    env: {
-      name: config.envName,
-      account: config.accountId,
-      region: config.region,
-    },
+new UserPoolStack(app, "UserPoolStack", {
+  env: {
+    name: config.envName,
+    account: config.accountId,
+    region: config.region,
   },
-);
+});
 
 const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   app,
@@ -56,9 +52,6 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
     artifactBucket,
     apiBuildBucketKey: buildArtifactKey,
     userAuthUrl: config.userAuthUrl,
-    userPoolArn,
-    userPoolId,
-    UserPoolClientId,
     env: {
       name: config.envName,
       account: config.accountId,
