@@ -1,12 +1,5 @@
 import { VerifyAuthChallengeResponseTriggerEvent } from "aws-lambda";
-import { User } from "@propelauth/node";
-import {
-  GetSecretValueCommand,
-  SecretsManager,
-} from "@aws-sdk/client-secrets-manager";
-import initBaseAuth from "./PropelAuthClient";
 import CognitoUserPoolClient from "./CognitoUserPoolClient";
-import SecretManagerError from "../auth/SecretManagerError";
 import PropelAuthClient from "./PropelAuthClient";
 import getUserAuthAPIKey from "./getUserAuthAPIKey";
 

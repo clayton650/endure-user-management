@@ -1,11 +1,5 @@
 import * as propelAuth from "@propelauth/node";
-import {
-  GetSecretValueCommand,
-  SecretsManager,
-} from "@aws-sdk/client-secrets-manager";
 import { User } from "@propelauth/node";
-import { initBaseAuth } from "@propelauth/node/dist/auth";
-import SecretManagerError from "../auth/SecretManagerError";
 
 type AccessToken = string;
 
