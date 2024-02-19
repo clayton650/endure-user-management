@@ -35,12 +35,14 @@ export default class UserPoolStack extends cdk.Stack {
       },
     });
 
+    const lambdaDistPath = "../app/dist/index.zip";
+
     const defineAuthChallengeLambda = new Function(
       this,
       "DefineAuthChallengeLambda",
       {
         runtime: Runtime.NODEJS_18_X,
-        code: Code.fromAsset("../dist/index.zip"),
+        code: Code.fromAsset(lambdaDistPath),
         handler: "index.defineAuthChallengeHandler",
       },
     );
@@ -50,7 +52,7 @@ export default class UserPoolStack extends cdk.Stack {
       "VerifyAuthChallengeResponseLambda",
       {
         runtime: Runtime.NODEJS_18_X,
-        code: Code.fromAsset("../dist/index.zip"),
+        code: Code.fromAsset(lambdaDistPath),
         handler: "index.verifyAuthChallengeResponseHandler",
       },
     );
@@ -65,9 +67,8 @@ export default class UserPoolStack extends cdk.Stack {
       verifyAuthChallengeResponseLambda,
     );
 
-    const userPoolClient = new UserPoolClient(this, "UserPoolClient", {
+    new UserPoolClient(this, "UserPoolClient", {
       userPool,
-      generateSecret: true,
       authFlows: {
         custom: true,
       },
