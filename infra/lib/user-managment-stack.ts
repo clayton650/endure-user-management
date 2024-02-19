@@ -16,9 +16,6 @@ interface UserManagementProps extends cdk.StackProps {
   artifactBucket: s3.IBucket;
   apiBuildBucketKey: string;
   userAuthUrl: string;
-  userPoolArn: string;
-  userPoolId: string;
-  userPoolClientId: string;
   env: UserManagementEnvProps;
 }
 
@@ -37,9 +34,6 @@ export default class UserManagementStack extends cdk.Stack {
       artifactBucket,
       apiBuildBucketKey,
       userAuthUrl,
-      userPoolArn,
-      userPoolId,
-      userPoolClientId,
     } = props;
 
     const userAuthAPIKeySecret = new cdk.aws_secretsmanager.Secret(
@@ -66,24 +60,11 @@ export default class UserManagementStack extends cdk.Stack {
         environment: {
           ENV_NAME: env.name,
           USER_AUTH_URL: userAuthUrl,
-          USER_POOL_ID: userPoolId,
-          USER_POOL_CLIENT_ID: userPoolClientId,
         },
       },
     );
 
     userAuthAPIKeySecret.grantRead(userManagementLambda);
-
-    userManagementLambda.addToRolePolicy(
-      new iam.PolicyStatement({
-        actions: [
-          "cognito-idp:AdminCreateUser",
-          "cognito-idp:AdminInitiateAuth",
-          "cognito-idp:AdminRespondToAuthChallenge",
-        ],
-        resources: [userPoolArn],
-      }),
-    );
 
     this.lambdaFunctionName = userManagementLambda.functionName;
     this.lambdaFunctionArn = userManagementLambda.functionArn;
