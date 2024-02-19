@@ -1,4 +1,13 @@
 import authHandler from "./auth/lambda";
+import {
+  createAuthChallengeHandler,
+  defineAuthChallengeHandler,
+  verifyAuthChallengeResponseHandler,
+} from "./cognito";
 
-// eslint-disable-next-line import/prefer-default-export
-export { authHandler };
+export {
+  authHandler,
+  createAuthChallengeHandler,
+  defineAuthChallengeHandler,
+  verifyAuthChallengeResponseHandler,
+};
