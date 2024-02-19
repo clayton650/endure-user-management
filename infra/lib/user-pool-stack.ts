@@ -1,6 +1,11 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { UserPool, UserPoolClient } from "aws-cdk-lib/aws-cognito";
+import {
+  UserPool,
+  UserPoolClient,
+  UserPoolOperation,
+} from "aws-cdk-lib/aws-cognito";
+import { Function, Code, Runtime } from "aws-cdk-lib/aws-lambda";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
 
 interface Env extends Environment {
@@ -30,13 +35,42 @@ export default class UserPoolStack extends cdk.Stack {
       },
     });
 
-    const userPoolClient = new UserPoolClient(this, "AppClient", {
+    const defineAuthChallengeLambda = new Function(
+      this,
+      "DefineAuthChallengeLambda",
+      {
+        runtime: Runtime.NODEJS_18_X,
+        code: Code.fromAsset("../dist/index.zip"),
+        handler: "index.defineAuthChallengeHandler",
+      },
+    );
+
+    const verifyAuthChallengeResponseLambda = new Function(
+      this,
+      "VerifyAuthChallengeResponseLambda",
+      {
+        runtime: Runtime.NODEJS_18_X,
+        code: Code.fromAsset("../dist/index.zip"),
+        handler: "index.verifyAuthChallengeResponseHandler",
+      },
+    );
+
+    userPool.addTrigger(
+      UserPoolOperation.DEFINE_AUTH_CHALLENGE,
+      defineAuthChallengeLambda,
+    );
+
+    userPool.addTrigger(
+      UserPoolOperation.VERIFY_AUTH_CHALLENGE_RESPONSE,
+      verifyAuthChallengeResponseLambda,
+    );
+
+    const userPoolClient = new UserPoolClient(this, "UserPoolClient", {
       userPool,
       generateSecret: true,
+      authFlows: {
+        custom: true,
+      },
     });
-
-    this.userPoolArn = userPool.userPoolArn;
-    this.userPoolId = userPool.userPoolId;
-    this.userPoolClientId = userPoolClient.userPoolClientId;
   }
 }
