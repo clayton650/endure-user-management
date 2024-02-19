@@ -60,6 +60,7 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   },
 );
 
+// TODO: fix typo in id
 new UserManagementPipeline(app, "UseManagementPipelineStack", {
   repo: config.repo,
   branch: config.branch,
