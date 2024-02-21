@@ -1,4 +1,4 @@
-import SecretManagerError from "./SecretManagerError";
+import SecretManagerError from "../cognito/SecretManagerError";
 import UnauthorizedUserError from "./UnauthorizedUserError";
 import UserPoolClientError from "../cognito/UserPoolClientError";
 import InternalServerError from "./InternalServerError";

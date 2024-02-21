@@ -2,26 +2,22 @@ import {
   GetSecretValueCommand,
   SecretsManager,
 } from "@aws-sdk/client-secrets-manager";
-import SecretManagerError from "../auth/SecretManagerError";
+import SecretManagerError from "./SecretManagerError";
 
-export default async function getUserAuthAPIKey() {
+type SecretName = string;
+export default async function getSecret(
+  secretName: SecretName,
+): Promise<Record<string, string>> {
   const secretManagerClient = new SecretsManager({
     region: process.env.AWS_REGION,
   });
   const { SecretString } = await secretManagerClient.send(
-    // TODO: why is this secret id reference cognito?
-    new GetSecretValueCommand({ SecretId: "prod-user-cognito-api-key" }),
+    new GetSecretValueCommand({ SecretId: secretName }),
   );
 
   if (!SecretString) {
     throw new SecretManagerError("Secret is not a string");
   }
 
-  const { userAuthAPIKey } = JSON.parse(SecretString);
-
-  if (!userAuthAPIKey) {
-    throw new SecretManagerError("Secret value can not be found");
-  }
-
-  return userAuthAPIKey;
+  return JSON.parse(SecretString);
 }

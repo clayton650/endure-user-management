@@ -1,17 +1,12 @@
-export enum ChallengeName {
-  PROPELAUTH_TOKEN_CHALLENGE = "PROPELAUTH_TOKEN_CHALLENGE",
-}
+import { DefineAuthChallengeTriggerEvent } from "aws-lambda";
 
-interface DefineAuthChallengeTriggerEventResponse {
-  challengeName: ChallengeName;
-  issueTokens: boolean;
-  failAuthentication: boolean;
-}
-
-export default async function handler(): Promise<DefineAuthChallengeTriggerEventResponse> {
-  return {
-    challengeName: ChallengeName.PROPELAUTH_TOKEN_CHALLENGE,
-    issueTokens: false,
-    failAuthentication: false,
-  };
+export default async function handler(
+  event: DefineAuthChallengeTriggerEvent,
+): Promise<DefineAuthChallengeTriggerEvent> {
+  /* eslint-disable no-param-reassign */
+  console.log("DefineAuthChallengeTriggerEvent:", event);
+  event.response.challengeName = "CUSTOM_CHALLENGE";
+  event.response.issueTokens = false;
+  event.response.failAuthentication = false;
+  return event;
 }

@@ -15,7 +15,6 @@ interface UserManagementProps extends cdk.StackProps {
   subDomain: string;
   artifactBucket: s3.IBucket;
   apiBuildBucketKey: string;
-  userAuthUrl: string;
   env: UserManagementEnvProps;
 }
 
@@ -27,27 +26,8 @@ export default class UserManagementStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: UserManagementProps) {
     super(scope, id, props);
 
-    const {
-      domainName,
-      subDomain,
-      env,
-      artifactBucket,
-      apiBuildBucketKey,
-      userAuthUrl,
-    } = props;
-
-    const userAuthAPIKeySecret = new cdk.aws_secretsmanager.Secret(
-      this,
-      "UserAuthAPIKeySecret",
-      {
-        secretName: `${env.name}-user-auth-api-key`,
-        secretObjectValue: {
-          userAuthAPIKey: SecretValue.unsafePlainText(
-            "fake-api-key-that-should-be-update-in-secrets-manager",
-          ),
-        },
-      },
-    );
+    const { domainName, subDomain, env, artifactBucket, apiBuildBucketKey } =
+      props;
 
     // TODO: rename lambda function to something more specific
     const userManagementLambda = new cdk.aws_lambda.Function(
@@ -59,12 +39,9 @@ export default class UserManagementStack extends cdk.Stack {
         handler: "index.authHandler",
         environment: {
           ENV_NAME: env.name,
-          USER_AUTH_URL: userAuthUrl,
         },
       },
     );
-
-    userAuthAPIKeySecret.grantRead(userManagementLambda);
 
     this.lambdaFunctionName = userManagementLambda.functionName;
     this.lambdaFunctionArn = userManagementLambda.functionArn;
