@@ -17,8 +17,6 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
     domainName: config.domainName,
     subDomain: config.subDomain,
     project: config.project,
-    artifactBucket,
-    apiBuildBucketKey: buildArtifactKey,
     env: {
       name: config.envName,
       account: config.accountId,
@@ -33,8 +31,6 @@ new UserManagementPipeline(app, "UserManagementPipelineStack", {
   project: config.project,
   lambdaFunctionName,
   lambdaFunctionArn,
-  artifactBucket,
-  apiBuildBucketKey: buildArtifactKey,
   env: {
     name: config.envName,
     account: config.accountId,

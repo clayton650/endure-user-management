@@ -11,8 +11,6 @@ interface Props extends cdk.StackProps {
   project: string;
   repo: string;
   branch: string;
-  artifactBucket: s3.IBucket;
-  apiBuildBucketKey: string;
   lambdaFunctionName: string;
   lambdaFunctionArn: string;
   env: UserManagementEnvProps;

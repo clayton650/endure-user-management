@@ -1,9 +1,7 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { CfnOutput, SecretValue } from "aws-cdk-lib";
-import * as iam from "aws-cdk-lib/aws-iam";
+import { CfnOutput } from "aws-cdk-lib";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
-import * as s3 from "aws-cdk-lib/aws-s3";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
@@ -13,8 +11,6 @@ interface UserManagementProps extends cdk.StackProps {
   project: string;
   domainName: string;
   subDomain: string;
-  artifactBucket: s3.IBucket;
-  apiBuildBucketKey: string;
   env: UserManagementEnvProps;
 }
 
@@ -26,8 +22,7 @@ export default class UserManagementStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: UserManagementProps) {
     super(scope, id, props);
 
-    const { domainName, subDomain, env, artifactBucket, apiBuildBucketKey } =
-      props;
+    const { domainName, subDomain, env } = props;
 
     const getUserDetailsLambda = new cdk.aws_lambda.Function(
       this,
@@ -35,7 +30,7 @@ export default class UserManagementStack extends cdk.Stack {
       {
         functionName: `${props.project}-${env.name}-get-user-details`,
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-        code: cdk.aws_lambda.Code.fromBucket(artifactBucket, apiBuildBucketKey),
+        code: cdk.aws_lambda.Code,
         handler: "index.getUserDetailsHandler",
         environment: {
           ENV_NAME: env.name,
