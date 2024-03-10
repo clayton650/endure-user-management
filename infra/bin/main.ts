@@ -6,19 +6,13 @@ import {
   UserManagementStack,
   UserManagementPipeline,
 } from "../lib";
-
-const config = {
-  accountId: "022703707499",
-  project: "user-management",
-  envName: "prod",
-  region: "us-west-2",
-  domainName: "letsendure.com",
-  subDomain: "user",
-  repo: "endure-user-management",
-  branch: "main",
-};
+import getConfig from "../config";
 
 const app = new cdk.App();
+
+const env = app.node.tryGetContext("env");
+
+const config = getConfig(env);
 
 // TODO: remove this stack, requires reworking below stacks
 const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
