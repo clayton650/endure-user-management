@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { CfnOutput } from "aws-cdk-lib";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
+import { HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
@@ -30,7 +31,7 @@ export default class UserManagementStack extends cdk.Stack {
       {
         functionName: `${props.project}-${env.name}-get-user-details`,
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
-        code: cdk.aws_lambda.Code,
+        code: cdk.aws_lambda.Code.fromAsset("../api/dist/index.zip"),
         handler: "index.getUserDetailsHandler",
         environment: {
           ENV_NAME: env.name,
@@ -41,24 +42,31 @@ export default class UserManagementStack extends cdk.Stack {
     this.lambdaFunctionName = getUserDetailsLambda.functionName;
     this.lambdaFunctionArn = getUserDetailsLambda.functionArn;
 
-    // TODO: add condition to limit localhost alllowOrigin to dev
-    // TODO: limit methods to only those you need?
-    const api = new cdk.aws_apigateway.LambdaRestApi(
-      this,
-      "UserManagementApi",
-      {
-        handler: getUserDetailsLambda,
-        proxy: false,
-        defaultCorsPreflightOptions: {
-          allowOrigins: [`https://www.${domainName}`, "http://localhost:5173"],
-          allowHeaders: cdk.aws_apigateway.Cors.DEFAULT_HEADERS,
-          allowMethods: cdk.aws_apigateway.Cors.ALL_METHODS,
-        },
-      },
-    );
+    let allowOrigins = [`https://www.${domainName}`];
+    if (env.name === "dev") {
+      // TODO: is there a better way to support local development?
+      const developmentAllowOrigins = [
+        "http://localhost:5173",
+        "http://dev.localhost:5173",
+      ];
+      allowOrigins = [...allowOrigins, ...developmentAllowOrigins];
+    }
 
-    const loginResource = api.root.addResource("details");
-    loginResource.addMethod("GET");
+    const allowMethods = [HttpMethod.GET];
+
+    const api = new cdk.aws_apigateway.RestApi(this, "UserManagementApi", {
+      restApiName: `${props.project}-${env.name}`,
+      defaultCorsPreflightOptions: {
+        allowOrigins,
+        allowHeaders: cdk.aws_apigateway.Cors.DEFAULT_HEADERS,
+        allowMethods,
+      },
+    });
+
+    const getUserDetailsLambdaIntegration =
+      new cdk.aws_apigateway.LambdaIntegration(getUserDetailsLambda);
+    const detailsResource = api.root.addResource("details");
+    detailsResource.addMethod(HttpMethod.GET, getUserDetailsLambdaIntegration);
 
     const hostedZone = cdk.aws_route53.HostedZone.fromLookup(
       this,
@@ -68,6 +76,7 @@ export default class UserManagementStack extends cdk.Stack {
       },
     );
 
+    // TODO: does this cert belong here? Seem generic to be moved to a different stack
     const certificate = new cdk.aws_certificatemanager.DnsValidatedCertificate(
       this,
       "ServicesCertificate",
@@ -85,11 +94,16 @@ export default class UserManagementStack extends cdk.Stack {
       value: certificate.certificateArn,
     });
 
+    const envSubDomain =
+      env.name === "prod" ? subDomain : `${subDomain}.${env.name}`;
+
+    const envDomainName = `${envSubDomain}.${domainName}`;
+
     const apiGatewayDomainName = new cdk.aws_apigateway.DomainName(
       this,
       "CustomDomain",
       {
-        domainName: `${subDomain}.${domainName}`,
+        domainName: envDomainName,
         certificate,
       },
     );
@@ -104,7 +118,7 @@ export default class UserManagementStack extends cdk.Stack {
       target: cdk.aws_route53.RecordTarget.fromAlias(
         new cdk.aws_route53_targets.ApiGatewayDomain(apiGatewayDomainName),
       ),
-      recordName: "user",
+      recordName: envSubDomain,
     });
   }
 }
