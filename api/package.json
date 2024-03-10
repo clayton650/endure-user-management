@@ -16,7 +16,7 @@
     "format:fix": "prettier **/*.{ts,json} --write",
     "fix": "yarn lint:fix && yarn format:fix",
     "start": "yarn build && node index.js",
-    "sanity": "yarn lint && yarn format:check"
+    "sanity": "yarn lint && yarn format:check && yarn test"
   },
   "dependencies": {
     "@aws-sdk/client-lambda": "^3.485.0"
