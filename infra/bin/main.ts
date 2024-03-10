@@ -6,7 +6,6 @@ import {
   UserManagementStack,
   UserManagementPipeline,
 } from "../lib";
-import UserPoolStack from "../lib/user-pool-stack";
 
 const config = {
   accountId: "022703707499",
@@ -33,14 +32,6 @@ const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
   },
 );
 
-new UserPoolStack(app, "UserPoolStack", {
-  env: {
-    name: config.envName,
-    account: config.accountId,
-    region: config.region,
-  },
-});
-
 const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   app,
   "UserManagementStack",
@@ -59,7 +50,7 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
 );
 
 // TODO: fix typo in id
-new UserManagementPipeline(app, "UseManagementPipelineStack", {
+new UserManagementPipeline(app, "UserManagementPipelineStack", {
   repo: config.repo,
   branch: config.branch,
   project: config.project,
