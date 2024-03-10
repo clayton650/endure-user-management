@@ -29,22 +29,22 @@ export default class UserManagementStack extends cdk.Stack {
     const { domainName, subDomain, env, artifactBucket, apiBuildBucketKey } =
       props;
 
-    // TODO: rename lambda function to something more specific
-    const userManagementLambda = new cdk.aws_lambda.Function(
+    const getUserDetailsLambda = new cdk.aws_lambda.Function(
       this,
       "UserManagementFunction",
       {
+        functionName: `${props.project}-${env.name}-get-user-details`,
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
         code: cdk.aws_lambda.Code.fromBucket(artifactBucket, apiBuildBucketKey),
-        handler: "index.authHandler",
+        handler: "index.getUserDetailsHandler",
         environment: {
           ENV_NAME: env.name,
         },
       },
     );
 
-    this.lambdaFunctionName = userManagementLambda.functionName;
-    this.lambdaFunctionArn = userManagementLambda.functionArn;
+    this.lambdaFunctionName = getUserDetailsLambda.functionName;
+    this.lambdaFunctionArn = getUserDetailsLambda.functionArn;
 
     // TODO: add condition to limit localhost alllowOrigin to dev
     // TODO: limit methods to only those you need?
@@ -52,7 +52,7 @@ export default class UserManagementStack extends cdk.Stack {
       this,
       "UserManagementApi",
       {
-        handler: userManagementLambda,
+        handler: getUserDetailsLambda,
         proxy: false,
         defaultCorsPreflightOptions: {
           allowOrigins: [`https://www.${domainName}`, "http://localhost:5173"],
@@ -62,8 +62,8 @@ export default class UserManagementStack extends cdk.Stack {
       },
     );
 
-    const loginResource = api.root.addResource("auth");
-    loginResource.addMethod("POST");
+    const loginResource = api.root.addResource("details");
+    loginResource.addMethod("GET");
 
     const hostedZone = cdk.aws_route53.HostedZone.fromLookup(
       this,

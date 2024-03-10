@@ -141,7 +141,7 @@ export default class UserManagementPipeline extends cdk.Stack {
     };
 
     new cdk.aws_codepipeline.Pipeline(this, "BuildDeployPipeline", {
-      pipelineName: `${env.name}-${project}-pipeline`,
+      pipelineName: `${project}-${env.name}-pipeline`,
       restartExecutionOnUpdate: true,
       stages: [sourceStage, buildStage, deployStage],
     });
