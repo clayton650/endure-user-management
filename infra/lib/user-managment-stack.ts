@@ -1,18 +1,17 @@
 import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
-import { CfnOutput } from "aws-cdk-lib";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
 import { HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
 
-interface UserManagementEnvProps extends Environment {
+interface EnvProps extends Environment {
   name: string;
   region: string;
 }
-interface UserManagementProps extends cdk.StackProps {
+interface Props extends cdk.StackProps {
   project: string;
   domainName: string;
   subDomain: string;
-  env: UserManagementEnvProps;
+  env: EnvProps;
 }
 
 export default class UserManagementStack extends cdk.Stack {
@@ -20,7 +19,7 @@ export default class UserManagementStack extends cdk.Stack {
 
   public readonly lambdaFunctionArn: string;
 
-  constructor(scope: Construct, id: string, props: UserManagementProps) {
+  constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
 
     const { domainName, subDomain, env } = props;
@@ -68,43 +67,28 @@ export default class UserManagementStack extends cdk.Stack {
     const detailsResource = api.root.addResource("details");
     detailsResource.addMethod(HttpMethod.GET, getUserDetailsLambdaIntegration);
 
-    const hostedZone = cdk.aws_route53.HostedZone.fromLookup(
-      this,
-      "HostedZone",
-      {
-        domainName,
-      },
-    );
-
-    // TODO: does this cert belong here? Seem generic to be moved to a different stack
-    const certificate = new cdk.aws_certificatemanager.DnsValidatedCertificate(
-      this,
-      "ServicesCertificate",
-      {
-        domainName,
-        subjectAlternativeNames: [`*.${domainName}`],
-        hostedZone,
-        validation:
-          cdk.aws_certificatemanager.CertificateValidation.fromDns(hostedZone),
-      },
-    );
-
-    new CfnOutput(this, "CertificateArn ", {
-      exportName: `endure-${env.name}-${env.region}-domain-dns-certificate-arn`,
-      value: certificate.certificateArn,
-    });
-
     const envSubDomain =
       env.name === "prod" ? subDomain : `${subDomain}.${env.name}`;
 
     const envDomainName = `${envSubDomain}.${domainName}`;
+
+    const servicesCertificateArn = cdk.Fn.importValue(
+      `${domainName}-dns-certificate-arn`,
+    );
+
+    const servicesCertificate =
+      cdk.aws_certificatemanager.Certificate.fromCertificateArn(
+        this,
+        "ServicesCertificate",
+        servicesCertificateArn,
+      );
 
     const apiGatewayDomainName = new cdk.aws_apigateway.DomainName(
       this,
       "CustomDomain",
       {
         domainName: envDomainName,
-        certificate,
+        certificate: servicesCertificate,
       },
     );
 
@@ -112,6 +96,15 @@ export default class UserManagementStack extends cdk.Stack {
       domainName: apiGatewayDomainName,
       restApi: api,
     });
+
+    // TODO: split up logical resources into separate stacks
+    const hostedZone = cdk.aws_route53.HostedZone.fromLookup(
+      this,
+      "HostedZone",
+      {
+        domainName,
+      },
+    );
 
     new cdk.aws_route53.ARecord(this, "APIGatewayAliasRecord", {
       zone: hostedZone,
