@@ -1,11 +1,7 @@
 #!/usr/bin/env node
 import "source-map-support/register";
 import * as cdk from "aws-cdk-lib";
-import {
-  UserManagementBucketStack,
-  UserManagementStack,
-  UserManagementPipeline,
-} from "../lib";
+import { UserManagementStack, UserManagementPipeline } from "../lib";
 import getConfig from "../config";
 
 const app = new cdk.App();
@@ -13,18 +9,6 @@ const app = new cdk.App();
 const env = app.node.tryGetContext("env");
 
 const config = getConfig(env);
-
-// TODO: remove this stack, requires reworking below stacks
-const { artifactBucket, buildArtifactKey } = new UserManagementBucketStack(
-  app,
-  "UserManagementBucketStack",
-  {
-    project: config.project,
-    env: {
-      name: config.envName,
-    },
-  },
-);
 
 const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   app,
@@ -43,7 +27,6 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   },
 );
 
-// TODO: fix typo in id
 new UserManagementPipeline(app, "UserManagementPipelineStack", {
   repo: config.repo,
   branch: config.branch,
