@@ -1,7 +1,6 @@
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
-import auth from "./auth";
+import getUserDetails from "./get-user-details";
 import MissingRequiredPropertiesError from "../common/MissingRequiredPropertiesError";
-import UnauthorizedUserError from "./UnauthorizedUserError";
 
 interface AuthHandlerEventBody {
   accessToken: string;
@@ -26,12 +25,11 @@ export default async function handler(
       );
     }
 
-    const userAuthInfo = await auth(accessToken, userId);
+    const userDetails = await getUserDetails(userId);
 
-    // TODO: deal with security implications related to headers and CORS
     return {
       statusCode: 200,
-      body: JSON.stringify(userAuthInfo),
+      body: JSON.stringify(userDetails),
       headers: {
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
@@ -54,20 +52,6 @@ export default async function handler(
         },
       };
     }
-
-    if (error instanceof UnauthorizedUserError) {
-      return {
-        statusCode: 401,
-        body: JSON.stringify({
-          message: error.message,
-        }),
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
-      };
-    }
-
     return {
       statusCode: 500,
       body: JSON.stringify({
