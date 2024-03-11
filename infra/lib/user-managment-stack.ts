@@ -2,6 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { Construct } from "constructs";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
 import { HttpMethod } from "aws-cdk-lib/aws-apigatewayv2";
+import UserManagementAPIStack from "./user-management-api-stack";
 
 interface EnvProps extends Environment {
   name: string;
@@ -22,13 +23,21 @@ export default class UserManagementStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
 
-    const { domainName, subDomain, env } = props;
+    const { domainName, subDomain, env, project } = props;
+
+    const { api } = new UserManagementAPIStack(this, "UserManagementAPIStack", {
+      project,
+      env,
+      domainName,
+      subDomain,
+      allowMethods: [HttpMethod.GET],
+    });
 
     const getUserDetailsLambda = new cdk.aws_lambda.Function(
       this,
       "UserManagementFunction",
       {
-        functionName: `${props.project}-${env.name}-get-user-details`,
+        functionName: `${project}-${env.name}-get-user-details`,
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,
         code: cdk.aws_lambda.Code.fromAsset("../api/dist/index.zip"),
         handler: "index.getUserDetailsHandler",
@@ -41,77 +50,9 @@ export default class UserManagementStack extends cdk.Stack {
     this.lambdaFunctionName = getUserDetailsLambda.functionName;
     this.lambdaFunctionArn = getUserDetailsLambda.functionArn;
 
-    let allowOrigins = [`https://www.${domainName}`];
-    if (env.name === "dev") {
-      // TODO: is there a better way to support local development?
-      const developmentAllowOrigins = [
-        "http://localhost:5173",
-        "http://dev.localhost:5173",
-      ];
-      allowOrigins = [...allowOrigins, ...developmentAllowOrigins];
-    }
-
-    const allowMethods = [HttpMethod.GET];
-
-    const api = new cdk.aws_apigateway.RestApi(this, "UserManagementApi", {
-      restApiName: `${props.project}-${env.name}`,
-      defaultCorsPreflightOptions: {
-        allowOrigins,
-        allowHeaders: cdk.aws_apigateway.Cors.DEFAULT_HEADERS,
-        allowMethods,
-      },
-    });
-
     const getUserDetailsLambdaIntegration =
       new cdk.aws_apigateway.LambdaIntegration(getUserDetailsLambda);
     const detailsResource = api.root.addResource("details");
     detailsResource.addMethod(HttpMethod.GET, getUserDetailsLambdaIntegration);
-
-    const envSubDomain =
-      env.name === "prod" ? subDomain : `${subDomain}.${env.name}`;
-
-    const envDomainName = `${envSubDomain}.${domainName}`;
-
-    const servicesCertificateArn = cdk.Fn.importValue(
-      `${domainName}-dns-certificate-arn`,
-    );
-
-    const servicesCertificate =
-      cdk.aws_certificatemanager.Certificate.fromCertificateArn(
-        this,
-        "ServicesCertificate",
-        servicesCertificateArn,
-      );
-
-    const apiGatewayDomainName = new cdk.aws_apigateway.DomainName(
-      this,
-      "CustomDomain",
-      {
-        domainName: envDomainName,
-        certificate: servicesCertificate,
-      },
-    );
-
-    new cdk.aws_apigateway.BasePathMapping(this, "BasePathMapping", {
-      domainName: apiGatewayDomainName,
-      restApi: api,
-    });
-
-    // TODO: split up logical resources into separate stacks
-    const hostedZone = cdk.aws_route53.HostedZone.fromLookup(
-      this,
-      "HostedZone",
-      {
-        domainName,
-      },
-    );
-
-    new cdk.aws_route53.ARecord(this, "APIGatewayAliasRecord", {
-      zone: hostedZone,
-      target: cdk.aws_route53.RecordTarget.fromAlias(
-        new cdk.aws_route53_targets.ApiGatewayDomain(apiGatewayDomainName),
-      ),
-      recordName: envSubDomain,
-    });
   }
 }
