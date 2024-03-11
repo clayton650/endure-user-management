@@ -25,6 +25,7 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   },
 );
 
+// TODO: Deploy to devops account
 new UserManagementPipeline(app, "UserManagementPipelineStack", {
   repo: config.repo,
   branch: config.branch,
