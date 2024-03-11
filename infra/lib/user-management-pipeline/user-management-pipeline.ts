@@ -31,7 +31,8 @@ export default class UserManagementPipeline extends cdk.Stack {
     const sourceArtifact = new cdk.aws_codepipeline.Artifact("SourceArtifact");
     const buildArtifact = new cdk.aws_codepipeline.Artifact("BuildArtifact");
 
-    const buildApp = new cdk.aws_codebuild.Project(this, "BuildApp", {
+    const buildApiProject = new cdk.aws_codebuild.Project(this, "Build", {
+      projectName: `${project}-${env.name}-pipeline-build`,
       buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
         path.join(__dirname, "buildspecs/build-app.yaml"),
       ),
@@ -58,7 +59,8 @@ export default class UserManagementPipeline extends cdk.Stack {
     //   },
     // });
 
-    const deployApp = new cdk.aws_codebuild.Project(this, "Deploy", {
+    const deployApiProject = new cdk.aws_codebuild.Project(this, "Deploy", {
+      projectName: `${project}-${env.name}-pipeline-deploy`,
       buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
         path.join(__dirname, "buildspecs/deploy.yaml"),
       ),
@@ -93,7 +95,7 @@ export default class UserManagementPipeline extends cdk.Stack {
         new cdk.aws_codepipeline_actions.CodeBuildAction({
           actionName: "BuildApp",
           input: sourceArtifact,
-          project: buildApp,
+          project: buildApiProject,
           outputs: [buildArtifact],
         }),
       ],
@@ -116,7 +118,7 @@ export default class UserManagementPipeline extends cdk.Stack {
     //   ],
     // };
 
-    deployApp.addToRolePolicy(
+    deployApiProject.addToRolePolicy(
       new cdk.aws_iam.PolicyStatement({
         sid: "AllowCodebuildToUpdateLambda",
         effect: cdk.aws_iam.Effect.ALLOW,
@@ -128,7 +130,7 @@ export default class UserManagementPipeline extends cdk.Stack {
     const lambdaUpdateAction = new cdk.aws_codepipeline_actions.CodeBuildAction(
       {
         actionName: "UpdateLambda",
-        project: deployApp,
+        project: deployApiProject,
         input: buildArtifact,
       },
     );

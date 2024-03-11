@@ -25,7 +25,7 @@ export default class UserManagementStack extends cdk.Stack {
 
     const { domainName, subDomain, env, project } = props;
 
-    const { api } = new UserManagementAPIStack(this, "UserManagementAPIStack", {
+    const { api } = new UserManagementAPIStack(this, `${id}-APIStack`, {
       project,
       env,
       domainName,
@@ -35,7 +35,7 @@ export default class UserManagementStack extends cdk.Stack {
 
     const getUserDetailsLambda = new cdk.aws_lambda.Function(
       this,
-      "UserManagementFunction",
+      `${id}-GetUserDetailsLambda`,
       {
         functionName: `${project}-${env.name}-get-user-details`,
         runtime: cdk.aws_lambda.Runtime.NODEJS_18_X,

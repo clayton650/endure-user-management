@@ -12,7 +12,7 @@ const config = getConfig(env);
 
 const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   app,
-  "UserManagementStack",
+  "UserManagement",
   {
     domainName: config.domainName,
     subDomain: config.subDomain,
@@ -26,7 +26,7 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
 );
 
 // TODO: Deploy to devops account
-new UserManagementPipeline(app, "UserManagementPipelineStack", {
+new UserManagementPipeline(app, "UserManagementPipeline", {
   repo: config.repo,
   branch: config.branch,
   project: config.project,
