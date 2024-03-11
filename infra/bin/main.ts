@@ -25,7 +25,10 @@ const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
   },
 );
 
-// TODO: Deploy to devops account
+const devopsConfig = {
+  accountId: "022703707499",
+};
+
 new UserManagementPipeline(app, "UserManagementPipeline", {
   repo: config.repo,
   branch: config.branch,
@@ -34,7 +37,7 @@ new UserManagementPipeline(app, "UserManagementPipeline", {
   lambdaFunctionArn,
   env: {
     name: config.envName,
-    account: config.accountId,
+    account: devopsConfig.accountId,
     region: config.region,
   },
 });
