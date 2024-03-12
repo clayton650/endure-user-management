@@ -3,4 +3,8 @@ version: 0.2
 phases:
   build:
     commands:
-      - aws lambda update-function-code --function-name $FUNCTION_NAME --zip-file fileb://$KEY
+      - |
+        IFS=',' read -ra FUNCTION_NAMES <<< "$FUNCTION_NAMES"
+        for i in "${FUNCTION_NAMES[@]}"; do
+          aws lambda update-function-code --function-name $i --zip-file fileb://$KEY
+        done
