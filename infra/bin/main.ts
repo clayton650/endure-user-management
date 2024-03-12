@@ -10,7 +10,7 @@ const env = app.node.tryGetContext("env");
 
 const config = getConfig(env);
 
-const { lambdaFunctionName, lambdaFunctionArn } = new UserManagementStack(
+const { lambdaFunctionDetails } = new UserManagementStack(
   app,
   "UserManagement",
   {
@@ -33,8 +33,7 @@ new UserManagementPipeline(app, "UserManagementPipeline", {
   repo: config.repo,
   branch: config.branch,
   project: config.project,
-  lambdaFunctionName,
-  lambdaFunctionArn,
+  lambdaFunctionDetails,
   env: {
     name: config.envName,
     account: devopsConfig.accountId,

@@ -47,7 +47,7 @@ export default class UserManagementAPIStack extends cdk.Stack {
     const envDomainName = `${envSubDomain}.${domainName}`;
 
     const servicesCertificateArn = cdk.Fn.importValue(
-      `${domainName}-dns-certificate-arn`,
+      `endure-services-dns-certificate-arn`,
     );
 
     const servicesCertificate =

@@ -3,6 +3,7 @@ import { Construct } from "constructs";
 import { Environment } from "aws-cdk-lib/core/lib/environment";
 import * as path from "path";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import { LambdaFunctionDetails } from "../user-management-stack/user-management-stack";
 
 interface UserManagementEnvProps extends Environment {
   name: string;
@@ -11,22 +12,14 @@ interface Props extends cdk.StackProps {
   project: string;
   repo: string;
   branch: string;
-  lambdaFunctionName: string;
-  lambdaFunctionArn: string;
+  lambdaFunctionDetails: LambdaFunctionDetails[];
   env: UserManagementEnvProps;
 }
 export default class UserManagementPipeline extends cdk.Stack {
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
 
-    const {
-      project,
-      env,
-      repo,
-      branch,
-      lambdaFunctionName,
-      lambdaFunctionArn,
-    } = props;
+    const { project, env, repo, branch, lambdaFunctionDetails } = props;
 
     const sourceArtifact = new cdk.aws_codepipeline.Artifact("SourceArtifact");
     const buildArtifact = new cdk.aws_codepipeline.Artifact("BuildArtifact");
@@ -59,6 +52,8 @@ export default class UserManagementPipeline extends cdk.Stack {
     //   },
     // });
 
+    const functionNames = lambdaFunctionDetails.map((fn) => fn.name);
+
     const deployApiProject = new cdk.aws_codebuild.Project(this, "Deploy", {
       projectName: `${project}-${env.name}-pipeline-deploy`,
       buildSpec: cdk.aws_codebuild.BuildSpec.fromAsset(
@@ -67,7 +62,7 @@ export default class UserManagementPipeline extends cdk.Stack {
       environment: {
         buildImage: cdk.aws_codebuild.LinuxBuildImage.STANDARD_7_0,
         environmentVariables: {
-          FUNCTION_NAME: { value: lambdaFunctionName },
+          FUNCTION_NAMES: { value: functionNames.join(",") },
           KEY: { value: "index.zip" },
         },
       },
@@ -118,12 +113,14 @@ export default class UserManagementPipeline extends cdk.Stack {
     //   ],
     // };
 
+    const lambdaFunctionArns = lambdaFunctionDetails.map((fn) => fn.arn);
+
     deployApiProject.addToRolePolicy(
       new cdk.aws_iam.PolicyStatement({
         sid: "AllowCodebuildToUpdateLambda",
         effect: cdk.aws_iam.Effect.ALLOW,
         actions: ["lambda:UpdateFunctionCode"],
-        resources: [lambdaFunctionArn],
+        resources: [...lambdaFunctionArns],
       }),
     );
 

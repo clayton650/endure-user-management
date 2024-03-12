@@ -15,10 +15,13 @@ interface Props extends cdk.StackProps {
   env: EnvProps;
 }
 
-export default class UserManagementStack extends cdk.Stack {
-  public readonly lambdaFunctionName: string;
+export interface LambdaFunctionDetails {
+  name: string;
+  arn: string;
+}
 
-  public readonly lambdaFunctionArn: string;
+export default class UserManagementStack extends cdk.Stack {
+  public readonly lambdaFunctionDetails: LambdaFunctionDetails[] = [];
 
   constructor(scope: Construct, id: string, props: Props) {
     super(scope, id, props);
@@ -47,12 +50,14 @@ export default class UserManagementStack extends cdk.Stack {
       },
     );
 
-    this.lambdaFunctionName = getUserDetailsLambda.functionName;
-    this.lambdaFunctionArn = getUserDetailsLambda.functionArn;
-
     const getUserDetailsLambdaIntegration =
       new cdk.aws_apigateway.LambdaIntegration(getUserDetailsLambda);
     const detailsResource = api.root.addResource("details");
     detailsResource.addMethod(HttpMethod.GET, getUserDetailsLambdaIntegration);
+
+    this.lambdaFunctionDetails.push({
+      name: getUserDetailsLambda.functionName,
+      arn: getUserDetailsLambda.functionArn,
+    });
   }
 }
